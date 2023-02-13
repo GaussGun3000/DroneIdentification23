@@ -3,6 +3,10 @@
 ### RoadMap
 
 - GUI
+  - source log file choice
+  - output file choice
+  - status bar
+  - result summary
 - Reading log file
 - Frame checksum
 - Frame type detection (Wi-Fi 9.2)
