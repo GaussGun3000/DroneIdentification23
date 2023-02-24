@@ -35,14 +35,13 @@
     <ClCompile Include="MainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ResourceCompile Include="$pro_name$.rc">
-    </ResourceCompile>
-    <None Include="$pro_name$.ico">
-      <Filter>Resource Files</Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LogAnalyzer.h">
+      <Filter>Header Files</Filter>
     </None>
-    <None Include="$pro_name$.def">
-      <Filter>Resource Files</Filter>
+    <None Include="logAnalyzer.cpp">
+      <Filter>Source Files</Filter>
     </None>
-
   </ItemGroup>
 </Project>
