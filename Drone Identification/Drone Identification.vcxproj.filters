@@ -36,12 +36,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="LogAnalyzer.h">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="logAnalyzer.cpp">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
 </Project>

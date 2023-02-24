@@ -352,9 +352,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindowClass</receiver>
+   <slot>outputFileButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>484</x>
+     <y>25</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>408</x>
+     <y>29</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>startButtonClicked()</slot>
   <slot>inputFileButton()</slot>
+  <slot>outputFileButton()</slot>
  </slots>
 </ui>
