@@ -19,4 +19,5 @@ public slots:
 
 private:
     Ui::MainWindowClass ui;
+    QString logFileName;
 };

@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::startButtonClicked()
 {
     std::unique_ptr<LogAnalyzer> analyzer(new LogAnalyzer);
-    if (analyzer->analizeLogs())
+    if (analyzer->analizeLogs(this->logFileName))
     {
         ui.statusBar->showMessage("Analisys was completed succesfully. Check the results section");
     }
@@ -30,6 +30,7 @@ void MainWindow::inputFileButton()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open .log data file"), QDir::currentPath(), tr("log files (*.log)"));
     if (!fileName.isEmpty())
     {
+        this->logFileName = fileName;
         ui.startButton->setEnabled(true);
         ui.statusBar->showMessage("Input file was set successfully, ready to start");
     }
@@ -37,11 +38,16 @@ void MainWindow::inputFileButton()
 
 void MainWindow::outputFileButton()
 {
-
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open .log data file"), QDir::currentPath(), tr("log files (*.log)"));
+    if (!fileName.isEmpty())
+    {
+        this->logFileName = fileName;
+        ui.startButton->setEnabled(true);
+        ui.statusBar->showMessage("Input file was set successfully, ready to start");
+    }
 }
 
 MainWindow::~MainWindow()
 {
-
 
 }
