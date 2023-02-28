@@ -43,7 +43,7 @@ std::unique_ptr<QTextStream> LogAnalyzer::openFile(const QString& fileName, std:
     return std::make_unique<QTextStream>(fileptr.get());
 }
 
-bool LogAnalyzer::checksumCRC(void* frame)
+bool LogAnalyzer::checksumCRC(QString& line)
 {
     return false;
 }
@@ -51,4 +51,9 @@ bool LogAnalyzer::checksumCRC(void* frame)
 bool LogAnalyzer::isBeaconFrame(void* frame)
 {
     return 0;
+}
+
+QByteArray& LogAnalyzer::extractFrameData(QString& line)
+{
+    // TODO: insert return statement here
 }
