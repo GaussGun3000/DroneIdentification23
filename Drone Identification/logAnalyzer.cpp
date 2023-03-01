@@ -17,6 +17,7 @@ bool LogAnalyzer::analizeLogs(QString logFileName)
             fileptr->close();
             return false;
         }
+        qInfo() << "Started input file log analysis"; 
         while (!fileStream -> atEnd())
         {
             QString line = fileStream -> readLine();
@@ -45,6 +46,13 @@ std::unique_ptr<QTextStream> LogAnalyzer::openFile(const QString& fileName, std:
 
 bool LogAnalyzer::checksumCRC(QString& line)
 {
+    if (line.isEmpty())
+    {
+        qWarning() << "Empty line received!";
+        return false;
+    }
+    QByteArray frameHex = extractFrameData(line);
+
     return false;
 }
 
@@ -56,4 +64,15 @@ bool LogAnalyzer::isBeaconFrame(void* frame)
 QByteArray& LogAnalyzer::extractFrameData(QString& line)
 {
     // TODO: insert return statement here
+    QStringList frameData = line.split(",");
+    if (frameData.size() != 5)
+    {
+        qWarning() << "Received a line of invalid format: " + line;
+        QByteArray nullarray;
+        return nullarray;
+    }
+    QString bits = frameData[4];
+    QString hexStr = bits.mid(bits.indexOf("=") + 1);
+    QByteArray hex = QByteArray::fromHex(hexStr.toUtf8());
+    return hex;
 }
