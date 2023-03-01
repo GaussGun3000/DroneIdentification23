@@ -19,5 +19,5 @@
 
 ### Add-ons
 - logging +
-- progress tracking
+- analysis progress tracking
 - multithread
