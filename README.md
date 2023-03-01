@@ -16,3 +16,8 @@
 - SSID analysis for Beacon-Frames
 - Find supposed drone MAC-address
 - Save all Beacon-frames with this MAC
+
+### Add-ons
+- logging +
+- progress tracking
+- multithread
