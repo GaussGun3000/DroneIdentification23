@@ -3,7 +3,7 @@
 ###Dependencies
 
 - Qt 5.15 for MSVC compiler
-- libtins 4.4 (expected to be in <project cwd>/libtins-master)
+- libtins 4.4 (expected to be in [project cwd]/libtins-master)
 
 
 ### RoadMap
