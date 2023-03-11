@@ -2,8 +2,26 @@
 #include "qfile.h"
 #include "qdebug.h"
 #include "qtextstream.h"
+#include "qcryptographichash"
 #include <memory>
+#include <tins/tins.h>
 
+
+quint32 LogAnalyzer::crcTable[256] = {};
+
+void LogAnalyzer::generateCrcTable() 
+{
+    const quint32 IEEE80211_POLY = 0b100000100110000010001110110110111;
+    for (int i = 0; i < 256; i++)
+    {
+        uint32_t c = i;
+        for (int j = 0; j < 8; j++)
+        {
+            c = (c & 1) ? (IEEE80211_POLY ^ (c >> 1)) : (c >> 1);
+        }
+        this->crcTable[i] = c;
+    }
+}
 
 bool LogAnalyzer::analizeLogs(QString logFileName)
 {
@@ -18,11 +36,14 @@ bool LogAnalyzer::analizeLogs(QString logFileName)
             return false;
         }
         qInfo() << "Started input file log analysis"; 
+        quint32 verifiedFrames = 0;
+        this->generateCrcTable();
         while (!fileStream -> atEnd())
         {
             QString line = fileStream -> readLine();
+            if (checksumCRC(line))
+                verifiedFrames += 1;
         }
-
         fileptr->close();
         return true;
     }
@@ -51,28 +72,51 @@ bool LogAnalyzer::checksumCRC(QString& line)
         qWarning() << "Empty line received!";
         return false;
     }
-    QByteArray frameHex = extractFrameData(line);
+    std::unique_ptr<QString> frameHex = extractFrameData(line);
+    if (frameHex -> isEmpty())
+    {
+        qWarning() << "Could not extract frame hex from frame data!";
+        return false;
+    }
+    QString fcs = frameHex -> right(fcsLen);  
+    QString frameContent = frameHex -> left(frameHex -> size() - fcsLen);
+    quint32 checksum = calculateCRC32(frameContent);
 
-    return false;
+    return fcs.toUInt(nullptr, 16) == checksum;
 }
 
-bool LogAnalyzer::isBeaconFrame(void* frame)
-{
-    return 0;
-}
-
-QByteArray& LogAnalyzer::extractFrameData(QString& line)
+std::unique_ptr<QString> LogAnalyzer::extractFrameData(QString& line)
 {
     // TODO: insert return statement here
     QStringList frameData = line.split(",");
     if (frameData.size() != 5)
     {
         qWarning() << "Received a line of invalid format: " + line;
-        QByteArray nullarray;
-        return nullarray;
+        return nullptr;
     }
     QString bits = frameData[4];
     QString hexStr = bits.mid(bits.indexOf("=") + 1);
-    QByteArray hex = QByteArray::fromHex(hexStr.toUtf8());
-    return hex;
+    return std::make_unique<QString>(hexStr);
 }
+
+quint32 LogAnalyzer::calculateCRC32(const QString& frameContent)
+{
+    quint32 crc = 0xFFFFFFFF;
+
+    QByteArray byteArray = QByteArray::fromHex(frameContent.toUtf8());
+
+    for (const char byte : byteArray)
+        crc = (crc >> 8) ^ crcTable[(crc ^ byte) & 0xFF];
+
+ 
+
+    return crc ^ 0xFFFFFFFF;
+}
+
+
+bool LogAnalyzer::isBeaconFrame(void* frame)
+{
+    return 0;
+}
+
+

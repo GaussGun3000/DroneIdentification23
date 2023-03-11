@@ -362,3 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Drone Identification/log.txt
+/npcap-sdk-1.13
+/test.txt
+/libtins-master
