@@ -1,5 +1,11 @@
 # DroneIdentification23
 
+###Dependencies
+
+- Qt 5.15 for MSVC compiler
+- tinslib 4.4
+
+
 ### RoadMap
 
 - GUI
