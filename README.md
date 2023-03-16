@@ -17,7 +17,7 @@
   - exctract FRC + 
   - compute CRC32 + 
   - refactor CRC methods into separate class
-- Frame type detection (Wi-Fi 9.2)
+- Frame type detection (Beacon frames identified) +
 - SSID analysis for Beacon-Frames
 - Find supposed drone MAC-address
 - Save all Beacon-frames with this MAC
