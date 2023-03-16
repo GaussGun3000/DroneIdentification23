@@ -5,13 +5,17 @@
 #include "qcryptographichash"
 #include <memory>
 #include <tins/tins.h>
+#include <iostream>
+
+using namespace Tins;
+
 
 
 quint32 LogAnalyzer::crcTable[256] = {};
 
 void LogAnalyzer::generateCrcTable() 
 {
-    const quint32 IEEE80211_POLY = 0b100000100110000010001110110110111;
+    const quint32 IEEE80211_POLY = 0xedb88320;
     for (int i = 0; i < 256; i++)
     {
         uint32_t c = i;
@@ -67,25 +71,45 @@ std::unique_ptr<QTextStream> LogAnalyzer::openFile(const QString& fileName, std:
 
 bool LogAnalyzer::checksumCRC(QString& line)
 {
+    
     if (line.isEmpty())
     {
         qWarning() << "Empty line received!";
         return false;
     }
-    std::unique_ptr<QString> frameHex = extractFrameData(line);
-    if (frameHex -> isEmpty())
+    std::unique_ptr<QByteArray> frame = extractFrameData(line);
+    if (frame->isEmpty())
     {
         qWarning() << "Could not extract frame hex from frame data!";
         return false;
     }
+
+    uint32_t fcs = *(reinterpret_cast<const uint32_t*>(frame -> right(fcsLen).constData()));
+    QByteArray frameContent = frame->left(frame->size() - fcsLen);
+
+    quint32 checksum = calculateCRC32(frameContent);
+    //uint8_t* frame_bytes = reinterpret_cast<uint8_t*>(frame -> data());
+    //std::vector<uint8_t> frame_v(frame->begin(), frame->end());
+    //PDU::serialization_type pdu_bytes(*frame_bytes);
+    //RawPDU raw_pdu(pdu_bytes);
+    //const Dot11* dot11 = raw_pdu.find_pdu<Dot11>();
+    //if (!dot11) {
+    //    qWarning() << "The packet (" << frame.get() << ") is not an IEEE802.11 frame";
+    //    return false;
+    //}
+    //
+    //std::string addr = dot11->addr1().to_string();
+    
+    /*
     QString fcs = frameHex -> right(fcsLen);  
     QString frameContent = frameHex -> left(frameHex -> size() - fcsLen);
     quint32 checksum = calculateCRC32(frameContent);
 
-    return fcs.toUInt(nullptr, 16) == checksum;
+    return fcs.toUInt(nullptr, 16) == checksum;*/
+    return checksum == fcs;
 }
 
-std::unique_ptr<QString> LogAnalyzer::extractFrameData(QString& line)
+std::unique_ptr<QByteArray> LogAnalyzer::extractFrameData(QString& line)
 {
     // TODO: insert return statement here
     QStringList frameData = line.split(",");
@@ -96,16 +120,15 @@ std::unique_ptr<QString> LogAnalyzer::extractFrameData(QString& line)
     }
     QString bits = frameData[4];
     QString hexStr = bits.mid(bits.indexOf("=") + 1);
-    return std::make_unique<QString>(hexStr);
+    QByteArray byteArray = QByteArray::fromHex(hexStr.toUtf8());
+    return std::make_unique<QByteArray>(byteArray);
 }
 
-quint32 LogAnalyzer::calculateCRC32(const QString& frameContent)
+quint32 LogAnalyzer::calculateCRC32(const QByteArray& frameContent)
 {
     quint32 crc = 0xFFFFFFFF;
 
-    QByteArray byteArray = QByteArray::fromHex(frameContent.toUtf8());
-
-    for (const char byte : byteArray)
+    for (const char byte : frameContent)
         crc = (crc >> 8) ^ crcTable[(crc ^ byte) & 0xFF];
 
  
