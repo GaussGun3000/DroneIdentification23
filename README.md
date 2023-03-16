@@ -3,8 +3,6 @@
 ### Dependencies
 
 - Qt 5.15 for MSVC compiler
-- libtins 4.4 (expected to be in [project cwd]/libtins-master)
-
 
 ### RoadMap
 
@@ -16,8 +14,9 @@
 - Reading log file +
 - Frame checksum
   - Exctract raw frame hex +
-  - exctract FRC
-  - compute CRC32
+  - exctract FRC + 
+  - compute CRC32 + 
+  - refactor CRC methods into separate class
 - Frame type detection (Wi-Fi 9.2)
 - SSID analysis for Beacon-Frames
 - Find supposed drone MAC-address
