@@ -43,6 +43,9 @@
     <ClInclude Include="crc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="analysisResults.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LogAnalyzer.cpp">

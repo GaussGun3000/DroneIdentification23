@@ -16,8 +16,14 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::startButtonClicked()
 {
     std::unique_ptr<LogAnalyzer> analyzer(new LogAnalyzer);
-    if (analyzer->analizeLogs(this->logFileName, this->outputFileName))
+    auto result = analyzer->analizeLogs(this->logFileName, this->outputFileName);
+    if (!result->MAC.isEmpty())
     {
+        ui.correctFrames->setText(QString("%1/%2").arg(result->correctFrames).arg(result->totalFrames));
+        QString mac = result->MAC.toHex();
+        ui.MAC->setText(QString("%1:%2:%3:%4:%5:%6").arg(mac.mid(0, 2)).arg(mac.mid(2, 2)).arg(mac.mid(4, 2))
+            .arg(mac.mid(6, 2)).arg(mac.mid(8, 2)).arg(mac.mid(10, 2)));
+        ui.beaconFrames->setText(QString("%1").arg(result->totalBeacons));
         ui.statusBar->showMessage("Analisys was completed succesfully. Check the results section");
     }
     else

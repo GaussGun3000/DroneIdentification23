@@ -13,7 +13,7 @@
 
 
 
-bool LogAnalyzer::analizeLogs(QString& logFileName, QString& outputFileName)
+std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs(QString& logFileName, QString& outputFileName)
 {
     try
     { 
@@ -23,11 +23,12 @@ bool LogAnalyzer::analizeLogs(QString& logFileName, QString& outputFileName)
         {
             qCritical() << "Input stream is corrupted!";
             fileptr->close();
-            return false;
+            return nullptr;
         }
         qInfo() << "Started input file log analysis"; 
         auto droneMacs = std::make_unique<QMap<QByteArray, QByteArray>>();
         auto beacons = std::make_unique<QVector<QByteArray>>();
+        auto res = std::make_unique<AnalysisReults>();
         crc crcChecker;
         while (!fileStream -> atEnd())
         {
@@ -38,22 +39,24 @@ bool LogAnalyzer::analizeLogs(QString& logFileName, QString& outputFileName)
             else
             {
                 std::unique_ptr<QByteArray> frame = extractFrameData(line);
+                res->totalFrames++;
                 if (crcChecker.checksumCRC(frame))  // Refactor so it takes frameData QByteArray as arg
                 {
+                    res->correctFrames++;
                     std::unique_ptr<QByteArray> frame = extractFrameData(line);
-                    processCorrectFrame(frame, droneMacs, beacons);
+                    processCorrectFrame(frame, droneMacs, beacons, res);
                 }
             }
         }
         fileptr->close();
         writeDroneBeacons(outputFileName, beacons);
-        return true;
+        return res;
     }
     catch (const std::exception& ex)
     {
         qCritical() << "Uncaught exception: " << ex.what();
     }
-    return false;
+    return nullptr;
 }
 
 std::unique_ptr<QTextStream> LogAnalyzer::openFile(const QString& fileName, std::unique_ptr<QFile>& fileptr)
@@ -120,14 +123,18 @@ const std::unique_ptr<QByteArray> LogAnalyzer::exctractMAC(std::unique_ptr<QByte
 
 const void LogAnalyzer::processCorrectFrame(std::unique_ptr<QByteArray>& frame, 
     std::unique_ptr<QMap<QByteArray, QByteArray>>& droneMacs,
-    std::unique_ptr<QVector<QByteArray>>& beacons)
+    std::unique_ptr<QVector<QByteArray>>& beacons,
+    std::unique_ptr<AnalysisReults>& res)
 {
     if (isBeaconFrame(frame))
     {
         auto ssid = extractSSID(frame);
         if (ssid && mathesDronePattern(ssid))
         {
-            droneMacs->insert(ssid->data(), frame->mid(addr2Start, addrLen));
+            QByteArray mac = frame->mid(addr2Start, addrLen);
+            res->totalBeacons++;
+            res->MAC = mac;
+            droneMacs->insert(ssid->data(), mac);
             beacons->append(*frame);
         }
     }

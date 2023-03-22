@@ -4,11 +4,12 @@
 #include <qfile.h>
 #include <memory>
 #include "qmap.h"
+#include "analysisResults.h"
 
 class LogAnalyzer
 {
 public:
-	bool analizeLogs(QString& logFileName, QString& outputFileName);
+	std::unique_ptr<AnalysisReults> analizeLogs(QString& logFileName, QString& outputFileName);
 private:
 	std::unique_ptr<QTextStream> openFile(const QString& fileName, std::unique_ptr<QFile>& fileptr);
 	const std::unique_ptr<QByteArray> extractFrameData(QString& line);
@@ -18,7 +19,8 @@ private:
 	const std::unique_ptr<QByteArray> exctractMAC(std::unique_ptr<QByteArray>& frame);
 	const void processCorrectFrame(std::unique_ptr<QByteArray>& frame, 
 		std::unique_ptr<QMap<QByteArray, QByteArray>>& droneMacs,
-		std::unique_ptr<QVector<QByteArray>>& beacons);
+		std::unique_ptr<QVector<QByteArray>>& beacons,
+		std::unique_ptr<AnalysisReults>& res);
 	void writeDroneBeacons(QString& fileName, std::unique_ptr<QVector<QByteArray>>& beacons);
 
 	const int headerOffset = 36;
