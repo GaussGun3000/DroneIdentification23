@@ -7,12 +7,13 @@
 #include <iostream>
 #include <QRegularExpression>
 #include <qmap.h>
+#include <Qvector>
 #include "crc.h"
 
 
 
 
-bool LogAnalyzer::analizeLogs(QString logFileName)
+bool LogAnalyzer::analizeLogs(QString& logFileName, QString& outputFileName)
 {
     try
     { 
@@ -25,7 +26,8 @@ bool LogAnalyzer::analizeLogs(QString logFileName)
             return false;
         }
         qInfo() << "Started input file log analysis"; 
-        std::unique_ptr<QMap<QByteArray, QByteArray>> droneMacs = std::make_unique<QMap<QByteArray, QByteArray>>();
+        auto droneMacs = std::make_unique<QMap<QByteArray, QByteArray>>();
+        auto beacons = std::make_unique<QVector<QByteArray>>();
         crc crcChecker;
         while (!fileStream -> atEnd())
         {
@@ -39,11 +41,12 @@ bool LogAnalyzer::analizeLogs(QString logFileName)
                 if (crcChecker.checksumCRC(frame))  // Refactor so it takes frameData QByteArray as arg
                 {
                     std::unique_ptr<QByteArray> frame = extractFrameData(line);
-                    processCorrectFrame(frame, droneMacs);
+                    processCorrectFrame(frame, droneMacs, beacons);
                 }
             }
         }
         fileptr->close();
+        writeDroneBeacons(outputFileName, beacons);
         return true;
     }
     catch (const std::exception& ex)
@@ -115,15 +118,38 @@ const std::unique_ptr<QByteArray> LogAnalyzer::exctractMAC(std::unique_ptr<QByte
     return std::unique_ptr<QByteArray>();
 }
 
-const void LogAnalyzer::processCorrectFrame(std::unique_ptr<QByteArray>& frame, std::unique_ptr<QMap<QByteArray, QByteArray>>& droneMacs)
+const void LogAnalyzer::processCorrectFrame(std::unique_ptr<QByteArray>& frame, 
+    std::unique_ptr<QMap<QByteArray, QByteArray>>& droneMacs,
+    std::unique_ptr<QVector<QByteArray>>& beacons)
 {
     if (isBeaconFrame(frame))
     {
         auto ssid = extractSSID(frame);
         if (ssid && mathesDronePattern(ssid))
-           droneMacs -> insert(ssid->data(), frame->mid(addr2Start, addrLen));
+        {
+            droneMacs->insert(ssid->data(), frame->mid(addr2Start, addrLen));
+            beacons->append(*frame);
+        }
     }
     return;
+}
+
+void LogAnalyzer::writeDroneBeacons(QString& fileName, std::unique_ptr<QVector<QByteArray>>& beacons)
+{
+    if (fileName.isEmpty()) fileName = "output.txt";
+    QFile output(fileName);
+    if (!output.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qCritical() << "Couldn't write to output file!";
+        return;
+    }
+    QTextStream ts(&output);
+    uint32_t i = 0;
+    for (QByteArray frame : *beacons)
+        ts << i++ << '\t' << frame.toHex() << endl;
+        
+    output.close();
+
 }
 
 

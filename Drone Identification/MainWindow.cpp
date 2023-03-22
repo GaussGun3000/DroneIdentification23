@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::startButtonClicked()
 {
     std::unique_ptr<LogAnalyzer> analyzer(new LogAnalyzer);
-    if (analyzer->analizeLogs(this->logFileName))
+    if (analyzer->analizeLogs(this->logFileName, this->outputFileName))
     {
         ui.statusBar->showMessage("Analisys was completed succesfully. Check the results section");
     }
