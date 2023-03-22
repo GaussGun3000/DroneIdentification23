@@ -40,7 +40,7 @@
     <ClInclude Include="LogAnalyzer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fcs.h">
+    <ClInclude Include="crc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -51,7 +51,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fcs.cpp">
+    <ClCompile Include="crc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
