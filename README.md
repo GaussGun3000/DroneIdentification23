@@ -16,11 +16,11 @@
   - Exctract raw frame hex +
   - exctract FRC + 
   - compute CRC32 + 
-  - refactor CRC methods into separate class
+  - refactor CRC methods into separate class + 
 - Frame type detection (Beacon frames identified) +
-- SSID analysis for Beacon-Frames
-- Find supposed drone MAC-address
-- Save all Beacon-frames with this MAC
+- SSID analysis for Beacon-Frames +
+- Find supposed drone MAC-address + 
+- Save all Beacon-frames with this MAC 
 
 ### Add-ons
 - logging +
