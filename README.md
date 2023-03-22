@@ -20,7 +20,7 @@
 - Frame type detection (Beacon frames identified) +
 - SSID analysis for Beacon-Frames +
 - Find supposed drone MAC-address + 
-- Save all Beacon-frames with this MAC 
+- Save all Beacon-frames with this MAC +
 
 ### Add-ons
 - logging +
