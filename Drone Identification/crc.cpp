@@ -24,7 +24,7 @@ void crc::generateCrcTable()
 
 const bool crc::checksumCRC(std::unique_ptr<QByteArray>& frame)
 {
-    if (frame->isEmpty())
+    if (!frame)
     {
         qWarning() << "Could not extract frame hex from frame data!";
         return false;

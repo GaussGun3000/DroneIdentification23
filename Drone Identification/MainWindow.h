@@ -2,7 +2,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_MainWindow.h"
-#include "QLayout.h"
+#include "LogAnalyzer.h"
+#include <memory>
 
 class MainWindow : public QMainWindow
 {
@@ -19,6 +20,5 @@ public slots:
 
 private:
     Ui::MainWindowClass ui;
-    QString logFileName;
-    QString outputFileName;
+    std::unique_ptr<LogAnalyzer> analyzer;
 };
