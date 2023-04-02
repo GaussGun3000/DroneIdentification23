@@ -13,12 +13,12 @@
 
 
 
-std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs(QString& logFileName, QString& outputFileName)
+std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs()
 {
     try
     { 
         std::unique_ptr<QFile> fileptr = nullptr;
-        std::unique_ptr<QTextStream> fileStream = openFile(logFileName, fileptr);
+        std::unique_ptr<QTextStream> fileStream = openFile(fileptr);
         if (fileStream -> status() != QTextStream::Ok )
         {
             qCritical() << "Input stream is corrupted!";
@@ -39,8 +39,9 @@ std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs(QString& logFileName, Q
             else
             {
                 std::unique_ptr<QByteArray> frame = extractFrameData(line);
-                res->totalFrames++;
-                if (crcChecker.checksumCRC(frame))  // Refactor so it takes frameData QByteArray as arg
+                if(frame) 
+                    res->totalFrames++;
+                if (crcChecker.checksumCRC(frame))
                 {
                     res->correctFrames++;
                     std::unique_ptr<QByteArray> frame = extractFrameData(line);
@@ -49,7 +50,8 @@ std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs(QString& logFileName, Q
             }
         }
         fileptr->close();
-        writeDroneBeacons(outputFileName, beacons);
+        writeDroneBeacons(beacons);
+        formatOutputStruct(res);
         return res;
     }
     catch (const std::exception& ex)
@@ -59,9 +61,19 @@ std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs(QString& logFileName, Q
     return nullptr;
 }
 
-std::unique_ptr<QTextStream> LogAnalyzer::openFile(const QString& fileName, std::unique_ptr<QFile>& fileptr)
+void LogAnalyzer::setInputFile(const QString& inputFileName)
 {
-    fileptr = std::make_unique<QFile>(fileName);
+    this->inputFileName = inputFileName;
+}
+
+void LogAnalyzer::setOutputFile(const QString& outputFileName)
+{
+    this->outputFileName = outputFileName;
+}
+
+std::unique_ptr<QTextStream> LogAnalyzer::openFile(std::unique_ptr<QFile>& fileptr)
+{
+    fileptr = std::make_unique<QFile>(this->inputFileName);
     if (!fileptr -> open(QIODevice::ReadOnly | QIODevice::Text))
     {
         qCritical() << "Couldn't read input file!";
@@ -90,7 +102,7 @@ const bool LogAnalyzer::isBeaconFrame(std::unique_ptr<QByteArray>& frame)
     QByteArray controlHeader = frame->left(2);
     quint8 ch_firstByte = controlHeader.at(0);
     quint8 ch_secondByte = controlHeader.at(1);
-    quint8 frameType = (ch_firstByte & 0b00001100) >> 2;   // Bit order is backwards (right ot left)
+    quint8 frameType = (ch_firstByte & 0b00001100) >> 2;   // Bit order is backwards (right to left)
     quint8 frameSubtype = (ch_firstByte & 0b11110000) >> 4;
     bool toDs = (ch_secondByte & 0x01) == 0x01;
     bool fromDs = (ch_secondByte & 0x02) == 0x02;
@@ -98,7 +110,7 @@ const bool LogAnalyzer::isBeaconFrame(std::unique_ptr<QByteArray>& frame)
     return (frameType == 0x00) && (frameSubtype == 0x08) && !toDs && !fromDs;  
 }
 
-std::unique_ptr<QByteArray> LogAnalyzer::extractSSID(std::unique_ptr<QByteArray>& frame)
+const std::unique_ptr<QByteArray> LogAnalyzer::extractSSID(std::unique_ptr<QByteArray>& frame)
 {
      quint8 id = frame->at(headerOffset);
      quint8 length = frame->at(headerOffset + 1);
@@ -133,9 +145,9 @@ const void LogAnalyzer::processCorrectFrame(std::unique_ptr<QByteArray>& frame,
         {
             QByteArray mac = frame->mid(addr2Start, addrLen);
             res->totalBeacons++;
-            if (res->MAC.isEmpty()) 
-                res->MAC = mac;
-            if (mac == res->MAC) 
+            if (res->rawMAC.isEmpty()) 
+                res->rawMAC = mac;
+            if (mac == res->rawMAC) 
                 beacons->append(*frame);
             droneMacs->insert(ssid->data(), mac);
         }
@@ -143,10 +155,10 @@ const void LogAnalyzer::processCorrectFrame(std::unique_ptr<QByteArray>& frame,
     return;
 }
 
-void LogAnalyzer::writeDroneBeacons(QString& fileName, std::unique_ptr<QVector<QByteArray>>& beacons)
+void LogAnalyzer::writeDroneBeacons(std::unique_ptr<QVector<QByteArray>>& beacons)
 {
-    if (fileName.isEmpty()) fileName = "output.txt";
-    QFile output(fileName);
+    if (outputFileName.isEmpty()) outputFileName = "output.txt";
+    QFile output(outputFileName);
     if (!output.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qCritical() << "Couldn't write to output file!";
@@ -160,5 +172,16 @@ void LogAnalyzer::writeDroneBeacons(QString& fileName, std::unique_ptr<QVector<Q
     output.close();
 
 }
+
+void LogAnalyzer::formatOutputStruct(std::unique_ptr<AnalysisReults>& res)
+{
+    if (!res->rawMAC.isEmpty())
+    {
+        QString mac = res->rawMAC.toHex();
+        res->MAC = QString("%1:%2:%3:%4:%5:%6").arg(mac.mid(0, 2), mac.mid(2, 2), mac.mid(4, 2), mac.mid(6, 2), mac.mid(8, 2), mac.mid(10, 2));
+        res->status = true;
+    }
+}
+
 
 
