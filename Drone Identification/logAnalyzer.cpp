@@ -39,7 +39,8 @@ std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs()
             else
             {
                 std::unique_ptr<QByteArray> frame = extractFrameData(line);
-                res->totalFrames++;
+                if(frame) 
+                    res->totalFrames++;
                 if (crcChecker.checksumCRC(frame))
                 {
                     res->correctFrames++;
