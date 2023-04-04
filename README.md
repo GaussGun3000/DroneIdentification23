@@ -10,7 +10,7 @@
   - source log file choice +
   - output file choice +
   - status bar +
-  - result summary
+  - result summary + 
 - Reading log file +
 - Frame checksum
   - Exctract raw frame hex +
@@ -21,6 +21,8 @@
 - SSID analysis for Beacon-Frames +
 - Find supposed drone MAC-address + 
 - Save all Beacon-frames with this MAC +
+
+- Autotest +
 
 ### Add-ons
 - logging +
