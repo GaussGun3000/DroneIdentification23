@@ -4,14 +4,11 @@
 #include "qtextstream.h"
 #include "qcryptographichash"
 #include <memory>
-#include <iostream>
 #include <QRegularExpression>
 #include <qmap.h>
 #include <Qvector>
+#include <qbytearray.h>
 #include "crc.h"
-
-
-
 
 std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs()
 {
@@ -44,7 +41,6 @@ std::unique_ptr<AnalysisReults> LogAnalyzer::analizeLogs()
                 if (crcChecker.checksumCRC(frame))
                 {
                     res->correctFrames++;
-                    std::unique_ptr<QByteArray> frame = extractFrameData(line);
                     processCorrectFrame(frame, droneMacs, beacons, res);
                 }
             }
@@ -93,7 +89,7 @@ const std::unique_ptr<QByteArray> LogAnalyzer::extractFrameData(QString& line)
     QString bits = frameData[4];
     QString hexStr = bits.mid(bits.indexOf("=") + 1);
     QByteArray byteArray = QByteArray::fromHex(hexStr.toUtf8());
-    return std::make_unique<QByteArray>(byteArray);
+    return std::make_unique<QByteArray>(std::move(byteArray));
 }
 
 
