@@ -1,4 +1,5 @@
 # DroneIdentification23
+Идентификация в потоке wi-fi трафика малого квадрокоптера DJI, работающего по протоколу IEEE802.11 (wi-fi)
 
 ### Dependencies
 
@@ -26,5 +27,4 @@
 
 ### Add-ons
 - logging +
-- analysis progress tracking
-- multithread
+
